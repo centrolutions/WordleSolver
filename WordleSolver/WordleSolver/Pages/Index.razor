@@ -1,9 +1,66 @@
 ﻿@page "/"
+@using System.Text.RegularExpressions
+@using static WordleSolver.Shared.Board
+@inject HttpClient Http
+@using static WordleSolver.Shared.Keyboard
 
-<PageTitle>Index</PageTitle>
+<Board @ref="MainBoard" />
+<div class="searchResultsContainer">
+    @foreach (var word in SearchResults)
+    {
+        <div class="searchResult">@word</div>
+    }
+</div>
+<Keyboard KeyPressed="OnKeyPressed" @ref="MainKeyboard" />
 
-<h1>Hello, world!</h1>
+@code {
+    Board MainBoard;
+    Keyboard MainKeyboard;
 
-Welcome to your new app.
+    string[] SearchResults { get; set; } = new string[] { };
 
-<SurveyPrompt Title="How is Blazor working for you?" />
+    async Task OnKeyPressed(KeyPressedEventArgs args)
+    {
+        if (args.KeyValue == '\n')
+        {
+            await Search();
+            return;
+        }
+
+        MainBoard.SetValue(args.KeyValue);
+        return;
+    }
+
+    async Task Search()
+    {
+        var search = CreateRegex(MainBoard.Tiles);
+        var words = (await Http.GetStringAsync("data/words_5_letters.txt")).Split('\n');
+
+        var wordSubList = words
+                          .Where(x => search.IsMatch(x))
+                          .ToArray();
+
+        foreach (var tile in MainBoard.Tiles.Where(x => x.Confidence == ConfidenceLevel.CorrectLetterWrongLocation))
+        {
+            wordSubList = wordSubList.Where(x => x.Contains(tile.Value)).ToArray();
+        }
+
+        SearchResults = wordSubList;
+    }
+
+    Regex CreateRegex(List<Tile> tiles)
+    {
+        string pattern = string.Empty;
+        foreach (var tile in tiles)
+        {
+            if (tile.Confidence == ConfidenceLevel.CorrectLetterRightLocation)
+                pattern += "[" + tile.Value + "]";
+            else if (tile.Confidence == ConfidenceLevel.CorrectLetterWrongLocation)
+                pattern += "[^" + tile.Value + "]";
+            else
+                pattern += "[a-zA-Z]";
+        }
+
+        return new Regex(pattern);
+    }
+}

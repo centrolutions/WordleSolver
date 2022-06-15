@@ -1,0 +1,67 @@
+﻿<game-keyboard></game-keyboard>
+
+<div id="keyboard-container">
+    <div id="keyboard">
+        <div class="row">
+            <button data-key="q" @onclick="async e => await PressKey('q')">q</button>
+            <button data-key="w" @onclick="async e => await PressKey('w')">w</button>
+            <button data-key="e" @onclick="async e => await PressKey('e')">e</button>
+            <button data-key="r" @onclick="async e => await PressKey('r')">r</button>
+            <button data-key="t" @onclick="async e => await PressKey('t')">t</button>
+            <button data-key="y" @onclick="async e => await PressKey('y')">y</button>
+            <button data-key="u" @onclick="async e => await PressKey('u')">u</button>
+            <button data-key="i" @onclick="async e => await PressKey('i')">i</button>
+            <button data-key="o" @onclick="async e => await PressKey('o')">o</button>
+            <button data-key="p" @onclick="async e => await PressKey('p')">p</button>
+        </div>
+        <div class="row">
+            <div class="spacer half"></div>
+            <button data-key="a" @onclick="async e => await PressKey('a')">a</button>
+            <button data-key="s" @onclick="async e => await PressKey('s')">s</button>
+            <button data-key="d" @onclick="async e => await PressKey('d')">d</button>
+            <button data-key="f" @onclick="async e => await PressKey('f')">f</button>
+            <button data-key="g" @onclick="async e => await PressKey('g')">g</button>
+            <button data-key="h" @onclick="async e => await PressKey('h')">h</button>
+            <button data-key="j" @onclick="async e => await PressKey('j')">j</button>
+            <button data-key="k" @onclick="async e => await PressKey('k')">k</button>
+            <button data-key="l" @onclick="async e => await PressKey('l')">l</button>
+            <div class="spacer half"></div>
+        </div>
+        <div class="row">
+            <button data-key="↵" class="one-and-a-half" @onclick="async e => await PressKey('\n')">enter</button>
+            <button data-key="z" @onclick="async e => await PressKey('z')">z</button>
+            <button data-key="x" @onclick="async e => await PressKey('x')">x</button>
+            <button data-key="c" @onclick="async e => await PressKey('c')">c</button>
+            <button data-key="v" @onclick="async e => await PressKey('v')">v</button>
+            <button data-key="b" @onclick="async e => await PressKey('b')">b</button>
+            <button data-key="n" @onclick="async e => await PressKey('n')">n</button>
+            <button data-key="m" @onclick="async e => await PressKey('m')">m</button>
+            <button data-key="←" class="one-and-a-half" @onclick="async e => await PressKey(default(char))">
+                <game-icon icon="backspace">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
+                        <path fill="var(--color-tone-1)" d="M22 3H7c-.69 0-1.23.35-1.59.88L0 12l5.41 8.11c.36.53.9.89 1.59.89h15c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H7.07L2.4 12l4.66-7H22v14zm-11.59-2L14 13.41 17.59 17 19 15.59 15.41 12 19 8.41 17.59 7 14 10.59 10.41 7 9 8.41 12.59 12 9 15.59z"></path>
+                    </svg>
+                </game-icon>
+            </button>
+        </div>
+    </div>
+</div>
+@code {
+    public class KeyPressedEventArgs : EventArgs
+    {
+        public char KeyValue { get; }
+
+        public KeyPressedEventArgs(char keyValue)
+        {
+            KeyValue = keyValue;
+        }
+    }
+
+    [Parameter]
+    public EventCallback<KeyPressedEventArgs> KeyPressed { get; set; }
+
+    async Task PressKey(char keyValue)
+    {
+        await KeyPressed.InvokeAsync(new KeyPressedEventArgs(keyValue));
+    }
+}

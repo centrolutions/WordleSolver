@@ -1,0 +1,97 @@
+﻿<div id="board">
+    <div id="game-board">
+        <div class="row">
+            @foreach (var tile in Tiles)
+            {
+                <div class="tile @tile.CssClass()" @onclick="() => Toggle(tile)">
+                    @tile.Value
+                    </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    public List<Tile> Tiles { get; } = new List<Tile>()
+    {
+        new Tile(),
+        new Tile(),
+        new Tile(),
+        new Tile(),
+        new Tile(),
+    };
+
+    public void SetValue(char newValue)
+    {
+        var selected = GetSelected();
+        if (selected == null)
+            return;
+
+        selected.Value = newValue;
+        StateHasChanged();
+    }
+
+    private void Toggle(Tile tile)
+    {
+        if (!tile.IsSelected)
+        {
+            DeselectAll();
+            tile.IsSelected = true;
+            return;
+        }
+
+        switch (tile.Confidence)
+        {
+            case ConfidenceLevel.IncorrectLetter:
+                tile.Confidence = ConfidenceLevel.CorrectLetterWrongLocation;
+                break;
+            case ConfidenceLevel.CorrectLetterWrongLocation:
+                tile.Confidence = ConfidenceLevel.CorrectLetterRightLocation;
+                break;
+            case ConfidenceLevel.CorrectLetterRightLocation:
+                tile.Confidence = ConfidenceLevel.IncorrectLetter;
+                break;
+        }
+    }
+
+    private void DeselectAll()
+    {
+        foreach (var tile in Tiles)
+            tile.IsSelected = false;
+    }
+
+    private Tile GetSelected()
+    {
+        var selected = Tiles.FirstOrDefault(x => x.IsSelected);
+        return selected;
+    }
+
+    public class Tile
+    {
+        public char Value { get; set; }
+        public ConfidenceLevel Confidence { get; set; }
+        public bool IsSelected { get; set; }
+
+        public string CssClass()
+        {
+            string result = string.Empty;
+            if (IsSelected)
+                result = " selected";
+
+            if (Confidence == ConfidenceLevel.CorrectLetterWrongLocation)
+                result += " yellow";
+
+            if (Confidence == ConfidenceLevel.CorrectLetterRightLocation)
+                result += " green";
+
+            return result;
+        }
+    }
+
+    public enum ConfidenceLevel
+    {
+        IncorrectLetter,
+        CorrectLetterWrongLocation,
+        CorrectLetterRightLocation,
+    }
+}
